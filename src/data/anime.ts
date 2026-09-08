@@ -32,7 +32,7 @@ export type Anime = {
 function makeEpisodes(count: number, titles: string[]): Episode[] {
   return Array.from({ length: count }, (_, i) => ({
     number: i + 1,
-    title: titles[i % titles.length],
+    title: titles[i % titles.length] ?? `Episode ${i + 1}`,
     duration: "24 min",
   }));
 }
@@ -249,7 +249,7 @@ export const allYears: number[] = Array.from(
   new Set(animeList.map((a) => a.year)),
 ).sort((a, b) => b - a);
 
-export const featuredAnime: Anime = animeList[0];
+export const featuredAnime: Anime = animeList[0]!;
 
 export const popularAnime: Anime[] = [...animeList]
   .sort((a, b) => b.score - a.score)
