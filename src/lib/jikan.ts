@@ -127,3 +127,33 @@ export async function fetchRecommendations(id: string, limit = 4): Promise<Anime
     return [];
   }
 }
+
+export const commonGenres = [
+  "Action",
+  "Adventure",
+  "Comedy",
+  "Drama",
+  "Fantasy",
+  "Horror",
+  "Mystery",
+  "Romance",
+  "Sci-Fi",
+  "Slice of Life",
+  "Sports",
+  "Supernatural",
+];
+
+export async function searchAnime(opts: {
+  query: string;
+  year: string;
+}): Promise<Anime[]> {
+  const params = new URLSearchParams({ limit: "24", sfw: "true" });
+  if (opts.query.trim()) params.set("q", opts.query.trim());
+  else params.set("order_by", "popularity");
+  if (opts.year !== "all") {
+    params.set("start_date", `${opts.year}-01-01`);
+    params.set("end_date", `${opts.year}-12-31`);
+  }
+  const json = await getJson<{ data: JikanAnime[] }>(`/anime?${params}`);
+  return dedupe(json.data.map(mapAnime));
+}

@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
-import { allGenres, allYears, animeList } from "@/data/anime";
+import { commonGenres, searchAnime } from "@/lib/jikan";
+
+const years = Array.from({ length: 27 }, (_, i) => String(2026 - i));
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -12,14 +15,16 @@ export const Route = createFileRoute("/search")({
       {
         name: "description",
         content:
-          "Search the AniVerse catalogue and filter anime by genre and release year to find your next series.",
+          "Search real anime data and filter by genre and release year to find your next series.",
       },
       { property: "og:title", content: "Search Anime by Genre and Year — AniVerse" },
       {
         property: "og:description",
         content:
-          "Search the AniVerse catalogue and filter anime by genre and release year to find your next series.",
+          "Search real anime data and filter by genre and release year to find your next series.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SearchPage,
@@ -27,22 +32,26 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
   const [genre, setGenre] = useState("all");
   const [year, setYear] = useState("all");
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return animeList.filter((anime) => {
-      const matchesQuery =
-        !q ||
-        anime.title.toLowerCase().includes(q) ||
-        anime.titleJp.includes(query.trim()) ||
-        anime.genres.some((g) => g.toLowerCase().includes(q));
-      const matchesGenre = genre === "all" || anime.genres.includes(genre);
-      const matchesYear = year === "all" || String(anime.year) === year;
-      return matchesQuery && matchesGenre && matchesYear;
-    });
-  }, [query, genre, year]);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query), 450);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["search", debounced, year],
+    queryFn: () => searchAnime({ query: debounced, year }),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const results = useMemo(
+    () =>
+      (data ?? []).filter((a) => genre === "all" || a.genres.includes(genre)),
+    [data, genre],
+  );
 
   return (
     <AppShell>
@@ -51,7 +60,9 @@ function SearchPage() {
           Browse the catalogue
         </h1>
         <p className="mt-2 text-sm text-slate-400">
-          {results.length} {results.length === 1 ? "title" : "titles"} match your filters.
+          {isLoading
+            ? "Searching…"
+            : `${results.length} ${results.length === 1 ? "title" : "titles"} match your filters.`}
         </p>
 
         <div className="mt-6 rounded-2xl glass p-4">
@@ -60,7 +71,7 @@ function SearchPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title or genre…"
+              placeholder="Search by title…"
               aria-label="Search anime"
               className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-600 focus:outline-none"
             />
@@ -71,18 +82,24 @@ function SearchPage() {
               label="Genre"
               value={genre}
               onChange={setGenre}
-              options={["all", ...allGenres]}
+              options={["all", ...commonGenres]}
             />
             <Select
               label="Year"
               value={year}
               onChange={setYear}
-              options={["all", ...allYears.map(String)]}
+              options={["all", ...years]}
             />
           </div>
         </div>
 
-        {results.length > 0 ? (
+        {isLoading ? (
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className="aspect-3/4 animate-pulse rounded-2xl glass" />
+            ))}
+          </div>
+        ) : results.length > 0 ? (
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {results.map((anime) => (
               <AnimeCard key={anime.id} anime={anime} />
@@ -91,7 +108,7 @@ function SearchPage() {
         ) : (
           <div className="mt-8 rounded-2xl glass px-6 py-16 text-center">
             <p className="font-display text-lg font-semibold text-foreground">
-              No titles found
+              {isError ? "Couldn't load results" : "No titles found"}
             </p>
             <p className="mt-2 text-sm text-slate-400">
               Try a different keyword, or loosen the genre and year filters.
