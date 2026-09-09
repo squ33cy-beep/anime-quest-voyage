@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import type { Anime } from "@/data/anime";
+import { statusLabel } from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
 
 export function AnimeCard({ anime }: { anime: Anime }) {
@@ -15,14 +16,30 @@ export function AnimeCard({ anime }: { anime: Anime }) {
         className="block"
         aria-label={anime.title}
       >
-        <img
-          src={anime.poster}
-          alt={`${anime.title} poster art`}
-          loading="lazy"
-          width={800}
-          height={1024}
-          className="aspect-3/4 w-full rounded-xl object-cover"
-        />
+        <div className="relative">
+          <img
+            src={anime.poster}
+            alt={`${anime.title} poster art`}
+            loading="lazy"
+            width={800}
+            height={1024}
+            className="aspect-3/4 w-full rounded-xl object-cover"
+          />
+          <span
+            className={`absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold backdrop-blur-md ${
+              anime.status === "Airing"
+                ? "border-cyan/40 bg-ink/75 text-cyan"
+                : anime.status === "Upcoming"
+                  ? "border-pink/40 bg-ink/75 text-pink"
+                  : "border-line/70 bg-ink/75 text-slate-300"
+            }`}
+          >
+            {anime.status === "Airing" && (
+              <span className="size-1.5 animate-pulse rounded-full bg-cyan" />
+            )}
+            {statusLabel(anime.status)}
+          </span>
+        </div>
         <div className="mt-3">
           <div className="flex items-start justify-between gap-2">
             <h3 className="min-w-0 truncate font-display font-semibold text-foreground">
@@ -33,8 +50,11 @@ export function AnimeCard({ anime }: { anime: Anime }) {
             </span>
           </div>
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            {anime.year} · {anime.genres.slice(0, 2).join(" · ")}
+            {anime.year || "TBA"} · {anime.genres.slice(0, 2).join(" · ")}
           </p>
+          <span className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-line bg-panel/60 px-3 py-2 text-xs font-semibold text-foreground transition group-hover:border-brand/50 group-hover:text-cyan">
+            View Details
+          </span>
         </div>
       </Link>
       <button
