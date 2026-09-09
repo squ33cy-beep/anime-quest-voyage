@@ -56,10 +56,30 @@ export function mapAnime(item: JikanAnime): Anime {
   };
 }
 
+// Jikan allows ~3 requests/second, so serialize calls with a small gap
+// and retry throttled responses instead of failing the section.
+let chain: Promise<unknown> = Promise.resolve();
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function queue<T>(task: () => Promise<T>): Promise<T> {
+  const run = chain.then(task, task);
+  chain = run.then(() => sleep(400), () => sleep(400));
+  return run;
+}
+
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`Jikan request failed (${res.status})`);
-  return (await res.json()) as T;
+  return queue(async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await fetch(`${BASE}${path}`);
+      if (res.ok) return (await res.json()) as T;
+      if (res.status === 429 || res.status >= 500) {
+        await sleep(800 * (attempt + 1));
+        continue;
+      }
+      throw new Error(`Jikan request failed (${res.status})`);
+    }
+    throw new Error("Jikan request failed after retries");
+  });
 }
 
 function dedupe(list: Anime[]): Anime[] {
