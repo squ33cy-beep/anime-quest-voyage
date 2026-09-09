@@ -39,16 +39,19 @@ function Home() {
     queryKey: ["anime", "airing"],
     queryFn: () => fetchAiringAnime(10),
     staleTime: 1000 * 60 * 10,
+    retry: 2,
   });
   const popular = useQuery({
     queryKey: ["anime", "popular"],
     queryFn: () => fetchPopularAnime(8),
     staleTime: 1000 * 60 * 10,
+    retry: 2,
   });
   const topRated = useQuery({
     queryKey: ["anime", "top-rated"],
     queryFn: () => fetchTopRatedAnime(8),
     staleTime: 1000 * 60 * 10,
+    retry: 2,
   });
 
   const featured = airing.data?.[0];

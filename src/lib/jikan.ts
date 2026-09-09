@@ -69,7 +69,7 @@ function queue<T>(task: () => Promise<T>): Promise<T> {
 
 async function getJson<T>(path: string): Promise<T> {
   return queue(async () => {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       const res = await fetch(`${BASE}${path}`);
       if (res.ok) return (await res.json()) as T;
       if (res.status === 429 || res.status >= 500) {
