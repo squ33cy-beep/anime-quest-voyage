@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
-import { animeList } from "@/data/anime";
+import type { Anime } from "@/data/anime";
+import { fetchAnimeById } from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
 
 export const Route = createFileRoute("/favorites")({
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/favorites")({
         property: "og:description",
         content: "Every anime you have saved to your AniVerse list, in one place.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FavoritesPage,
@@ -25,7 +29,16 @@ export const Route = createFileRoute("/favorites")({
 
 function FavoritesPage() {
   const { favorites } = useFavorites();
-  const saved = animeList.filter((anime) => favorites.includes(anime.id));
+  const { data, isLoading } = useQuery({
+    queryKey: ["favorites", favorites],
+    queryFn: async () => {
+      const list = await Promise.all(favorites.map((id) => fetchAnimeById(id)));
+      return list.filter((a): a is Anime => a !== null);
+    },
+    enabled: favorites.length > 0,
+    staleTime: 1000 * 60 * 10,
+  });
+  const saved = data ?? [];
 
   return (
     <AppShell>
@@ -34,15 +47,23 @@ function FavoritesPage() {
           My list
         </h1>
         <p className="mt-2 text-sm text-slate-400">
-          {saved.length} saved {saved.length === 1 ? "title" : "titles"}
+          {favorites.length} saved {favorites.length === 1 ? "title" : "titles"}
         </p>
 
-        {saved.length > 0 ? (
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {saved.map((anime) => (
-              <AnimeCard key={anime.id} anime={anime} />
-            ))}
-          </div>
+        {favorites.length > 0 ? (
+          isLoading ? (
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {favorites.map((id) => (
+                <div key={id} className="aspect-3/4 animate-pulse rounded-2xl glass" />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {saved.map((anime) => (
+                <AnimeCard key={anime.id} anime={anime} />
+              ))}
+            </div>
+          )
         ) : (
           <div className="mt-8 rounded-3xl glass px-6 py-20 text-center">
             <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-brand to-cyan shadow-lg shadow-brand/30">
@@ -53,7 +74,7 @@ function FavoritesPage() {
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-slate-400">
               Tap the heart on any poster and it will show up here, ready for your next
-              binge.
+              watchlist.
             </p>
             <Link
               to="/search"
