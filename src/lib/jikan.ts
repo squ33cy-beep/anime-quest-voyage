@@ -114,10 +114,15 @@ export async function fetchEpisodes(id: string): Promise<Episode[]> {
 
 export async function fetchRecommendations(id: string, limit = 4): Promise<Anime[]> {
   try {
-    const json = await getJson<{ data: { entry: JikanAnime }[] }>(
-      `/anime/${id}/recommendations`,
+    const json = await getJson<{
+      data: { entry: { mal_id: number; title: string; images: JikanAnime["images"] } }[];
+    }>(`/anime/${id}/recommendations`);
+    const entries = json.data.slice(0, limit).map((r) => r.entry);
+    return dedupe(
+      await Promise.all(entries.map((e) => fetchAnimeById(String(e.mal_id)))).then(
+        (list) => list.filter((a): a is Anime => a !== null),
+      ),
     );
-    return dedupe(json.data.slice(0, limit).map((r) => mapAnime(r.entry)));
   } catch {
     return [];
   }
