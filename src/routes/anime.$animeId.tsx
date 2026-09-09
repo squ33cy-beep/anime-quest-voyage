@@ -1,15 +1,24 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Heart, Play } from "lucide-react";
+import { Heart } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
-import { animeList, getAnimeById } from "@/data/anime";
+import {
+  fetchAnimeById,
+  fetchEpisodes,
+  fetchRecommendations,
+  statusLabel,
+} from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
 
 export const Route = createFileRoute("/anime/$animeId")({
-  loader: ({ params }) => {
-    const anime = getAnimeById(params.animeId);
+  loader: async ({ params }) => {
+    const anime = await fetchAnimeById(params.animeId);
     if (!anime) throw notFound();
-    return { anime };
+    const [episodes, similar] = await Promise.all([
+      fetchEpisodes(params.animeId),
+      fetchRecommendations(params.animeId, 4),
+    ]);
+    return { anime: { ...anime, episodes }, similar };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -22,7 +31,7 @@ export const Route = createFileRoute("/anime/$animeId")({
     }
     const { anime } = loaderData;
     const title = `${anime.title} — Episodes, Score & Details | AniVerse`;
-    const description = anime.synopsis;
+    const description = anime.synopsis.slice(0, 155);
     return {
       meta: [
         { title },
@@ -31,6 +40,12 @@ export const Route = createFileRoute("/anime/$animeId")({
         { property: "og:description", content: description },
         { property: "og:type", content: "video.tv_show" },
         { name: "twitter:card", content: "summary_large_image" },
+        ...(anime.poster.startsWith("https://")
+          ? [
+              { property: "og:image", content: anime.poster },
+              { name: "twitter:image", content: anime.poster },
+            ]
+          : []),
       ],
     };
   },
@@ -54,15 +69,9 @@ function AnimeNotFound() {
 }
 
 function AnimeDetail() {
-  const { anime } = Route.useLoaderData();
+  const { anime, similar } = Route.useLoaderData();
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(anime.id);
-
-  const similar = animeList
-    .filter(
-      (a) => a.id !== anime.id && a.genres.some((g) => anime.genres.includes(g)),
-    )
-    .slice(0, 4);
 
   return (
     <AppShell>
@@ -80,6 +89,20 @@ function AnimeDetail() {
         </div>
 
         <div className="min-w-0 flex-1">
+          <div
+            className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md ${
+              anime.status === "Airing"
+                ? "border-cyan/40 bg-panel/60 text-cyan"
+                : anime.status === "Upcoming"
+                  ? "border-pink/40 bg-panel/60 text-pink"
+                  : "border-line/70 bg-panel/60 text-slate-300"
+            }`}
+          >
+            {anime.status === "Airing" && (
+              <span className="size-1.5 animate-pulse rounded-full bg-cyan" />
+            )}
+            {statusLabel(anime.status)}
+          </div>
           <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
             {anime.title}
           </h1>
@@ -89,9 +112,12 @@ function AnimeDetail() {
 
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Score" value={`★ ${anime.score.toFixed(1)}`} />
-            <Stat label="Status" value={anime.status} />
-            <Stat label="Episodes" value={String(anime.episodeCount)} />
-            <Stat label="Year" value={String(anime.year)} />
+            <Stat label="Status" value={statusLabel(anime.status)} />
+            <Stat
+              label="Episodes"
+              value={anime.episodeCount ? String(anime.episodeCount) : "TBA"}
+            />
+            <Stat label="Year" value={anime.year ? String(anime.year) : "TBA"} />
           </div>
 
           <p className="mt-6 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
@@ -109,13 +135,7 @@ function AnimeDetail() {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand to-cyan px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-brand/30 transition hover:shadow-xl hover:shadow-cyan/30"
-            >
-              <Play className="size-4 fill-current" /> Watch episode 1
-            </button>
+          <div className="mt-8">
             <button
               type="button"
               onClick={() => toggleFavorite(anime.id)}
@@ -129,29 +149,31 @@ function AnimeDetail() {
         </div>
       </section>
 
-      <section className="mt-16">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Episodes
-        </h2>
-        <ul className="mt-6 divide-y divide-line/60 overflow-hidden rounded-2xl glass">
-          {anime.episodes.map((episode) => (
-            <li
-              key={episode.number}
-              className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-white/[0.03] sm:px-5"
-            >
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-ink/60 font-display text-sm font-bold text-cyan">
-                {episode.number}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                {episode.title}
-              </span>
-              <span className="shrink-0 text-xs text-slate-500">
-                {episode.duration}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {anime.episodes.length > 0 && (
+        <section className="mt-16">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Episodes
+          </h2>
+          <ul className="mt-6 divide-y divide-line/60 overflow-hidden rounded-2xl glass">
+            {anime.episodes.map((episode) => (
+              <li
+                key={episode.number}
+                className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-white/[0.03] sm:px-5"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-ink/60 font-display text-sm font-bold text-cyan">
+                  {episode.number}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                  {episode.title}
+                </span>
+                <span className="shrink-0 text-xs text-slate-500">
+                  {episode.duration}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {similar.length > 0 && (
         <section className="mt-16">
