@@ -73,7 +73,7 @@ async function getJson<T>(path: string): Promise<T> {
       const res = await fetch(`${BASE}${path}`);
       if (res.ok) return (await res.json()) as T;
       if (res.status === 429 || res.status >= 500) {
-        await sleep(800 * (attempt + 1));
+        await sleep(1200 * (attempt + 1));
         continue;
       }
       throw new Error(`Jikan request failed (${res.status})`);
@@ -89,23 +89,23 @@ function dedupe(list: Anime[]): Anime[] {
 
 export async function fetchPopularAnime(limit = 8): Promise<Anime[]> {
   const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime?filter=bypopularity&limit=${limit}`,
+    `/top/anime?filter=bypopularity`,
   );
-  return dedupe(json.data.map(mapAnime));
+  return dedupe(json.data.map(mapAnime)).slice(0, limit);
 }
 
 export async function fetchAiringAnime(limit = 10): Promise<Anime[]> {
   const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime?filter=airing&limit=${limit}`,
+    `/top/anime?filter=airing`,
   );
-  return dedupe(json.data.map(mapAnime));
+  return dedupe(json.data.map(mapAnime)).slice(0, limit);
 }
 
 export async function fetchTopRatedAnime(limit = 8): Promise<Anime[]> {
   const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime?limit=${limit}`,
+    `/top/anime`,
   );
-  return dedupe(json.data.map(mapAnime));
+  return dedupe(json.data.map(mapAnime)).slice(0, limit);
 }
 
 export async function fetchAnimeById(id: string): Promise<Anime | null> {
@@ -167,7 +167,7 @@ export async function searchAnime(opts: {
   query: string;
   year: string;
 }): Promise<Anime[]> {
-  const params = new URLSearchParams({ limit: "24", sfw: "true" });
+  const params = new URLSearchParams({ sfw: "true" });
   if (opts.query.trim()) params.set("q", opts.query.trim());
   else params.set("order_by", "popularity");
   if (opts.year !== "all") {
