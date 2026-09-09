@@ -1,18 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { Compass, Heart, Menu, Search, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage, type TKey } from "@/lib/i18n";
 
 const desktopNav = [
-  { label: "Discover", to: "/" },
-  { label: "Browse", to: "/search" },
-  { label: "My List", to: "/favorites" },
-] as const;
+  { key: "nav.discover", to: "/" },
+  { key: "nav.browse", to: "/search" },
+  { key: "nav.myList", to: "/favorites" },
+] as const satisfies readonly { key: TKey; to: string }[];
 
-const mobileNav: { label: string; to: string; icon: LucideIcon }[] = [
-  { label: "Home", to: "/", icon: Compass },
-  { label: "Search", to: "/search", icon: Search },
-  { label: "Saved", to: "/favorites", icon: Heart },
-  { label: "Sign in", to: "/login", icon: Menu },
+const mobileNav: { key: TKey; to: string; icon: LucideIcon }[] = [
+  { key: "nav.home", to: "/", icon: Compass },
+  { key: "nav.search", to: "/search", icon: Search },
+  { key: "nav.saved", to: "/favorites", icon: Heart },
+  { key: "nav.signIn", to: "/login", icon: Menu },
 ];
 
 export function AmbientBackdrop() {
@@ -39,6 +41,8 @@ export function BrandMark() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useLanguage();
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-ink text-slate-200">
       <AmbientBackdrop />
@@ -54,14 +58,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 activeProps={{ className: "text-foreground" }}
                 className="transition hover:text-foreground"
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
           </nav>
           <div className="flex items-center gap-3">
+            <LanguageToggle />
             <Link
               to="/search"
-              aria-label="Search anime"
+              aria-label={t("nav.search")}
               className="hidden text-slate-500 transition hover:text-foreground sm:block"
             >
               <Search className="size-5" />
@@ -70,12 +75,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               to="/login"
               className="hidden rounded-full border border-line bg-panel/60 px-4 py-2 text-sm font-semibold text-foreground backdrop-blur-md transition hover:border-brand/50 sm:block"
             >
-              Log in
+              {t("action.login")}
             </Link>
             <Link
               to="/register"
               aria-label="Create an account"
-              className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-pink to-brand text-sm font-bold text-primary-foreground"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-pink to-brand text-sm font-bold text-primary-foreground"
             >
               R
             </Link>
@@ -95,7 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="flex flex-col items-center gap-1 text-slate-500"
             >
               <item.icon className="size-5" />
-              <span className="text-[10px] font-semibold">{item.label}</span>
+              <span className="text-[10px] font-semibold">{t(item.key)}</span>
             </Link>
           ))}
         </div>
