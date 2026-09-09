@@ -154,7 +154,7 @@ function Grid({
   query,
   skip = 0,
 }: {
-  query: { data?: Anime[]; isLoading: boolean; isError: boolean };
+  query: { data: Anime[] | undefined; isLoading: boolean; isError: boolean };
   skip?: number;
 }) {
   if (query.isLoading) {
