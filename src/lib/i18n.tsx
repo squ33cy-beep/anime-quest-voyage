@@ -137,10 +137,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Fall back to English instead of throwing, so a component rendered outside the
+// provider (e.g. during a hot reload) never blanks the page.
+const fallback: Ctx = {
+  lang: "en",
+  setLang: () => {},
+  t: (key: TKey) => dict[key].en,
+};
+
 export function useLanguage(): Ctx {
-  const ctx = useContext(LanguageContext);
-  if (!ctx) throw new Error("useLanguage must be used inside LanguageProvider");
-  return ctx;
+  return useContext(LanguageContext) ?? fallback;
 }
 
 export function statusKey(status: "Airing" | "Upcoming" | "Finished"): TKey {
