@@ -8,6 +8,7 @@ const desktopNav = [
   { key: "nav.discover", to: "/" },
   { key: "nav.browse", to: "/search" },
   { key: "nav.myList", to: "/favorites" },
+  { key: "nav.schedule", to: "/schedule" },
 ] as const satisfies readonly { key: TKey; to: string }[];
 
 const mobileNav: { key: TKey; to: string; icon: LucideIcon }[] = [

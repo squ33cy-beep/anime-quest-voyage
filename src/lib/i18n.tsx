@@ -79,6 +79,28 @@ const dict = {
     th: "โหลดรายการนี้ไม่ได้ในขณะนี้ กรุณาลองอีกครั้ง",
   },
   "misc.tba": { en: "TBA", th: "รอประกาศ" },
+  "nav.schedule": { en: "My Schedule", th: "ตารางของฉัน" },
+  "schedule.title": { en: "My Schedule", th: "ตารางออกอากาศของฉัน" },
+  "schedule.subtitle": {
+    en: "Saved titles that are currently airing, grouped by broadcast day.",
+    th: "เรื่องที่บันทึกไว้และกำลังออนแอร์ จัดกลุ่มตามวันออกอากาศ",
+  },
+  "schedule.emptyTitle": {
+    en: "No airing titles in your list",
+    th: "ยังไม่มีเรื่องที่กำลังออนแอร์ในรายการ",
+  },
+  "schedule.emptyBody": {
+    en: "Save a currently airing anime and it will appear on the day it broadcasts.",
+    th: "บันทึกอนิเมะที่กำลังออนแอร์ แล้วจะปรากฏในวันที่ออกอากาศ",
+  },
+  "schedule.unknownDay": { en: "Day not announced", th: "ยังไม่ระบุวัน" },
+  "day.monday": { en: "Monday", th: "จันทร์" },
+  "day.tuesday": { en: "Tuesday", th: "อังคาร" },
+  "day.wednesday": { en: "Wednesday", th: "พุธ" },
+  "day.thursday": { en: "Thursday", th: "พฤหัสบดี" },
+  "day.friday": { en: "Friday", th: "ศุกร์" },
+  "day.saturday": { en: "Saturday", th: "เสาร์" },
+  "day.sunday": { en: "Sunday", th: "อาทิตย์" },
 } as const;
 
 export type TKey = keyof typeof dict;
