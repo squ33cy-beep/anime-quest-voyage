@@ -16,6 +16,7 @@ type JikanAnime = {
   synopsis: string | null;
   genres: { name: string }[];
   themes?: { name: string }[];
+  broadcast?: { day: string | null; time: string | null } | null;
 };
 
 type JikanEpisode = {
@@ -53,6 +54,8 @@ export function mapAnime(item: JikanAnime): Anime {
     episodeCount: item.episodes ?? 0,
     synopsis: item.synopsis ?? "No synopsis available yet.",
     episodes: [],
+    broadcastDay: item.broadcast?.day ?? null,
+    broadcastTime: item.broadcast?.time ?? null,
   };
 }
 

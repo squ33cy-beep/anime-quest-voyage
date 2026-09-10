@@ -27,6 +27,9 @@ export type Anime = {
   episodeCount: number;
   synopsis: string;
   episodes: Episode[];
+  /** Weekly broadcast day, e.g. "Mondays" (only for airing titles). */
+  broadcastDay?: string | null;
+  broadcastTime?: string | null;
 };
 
 function makeEpisodes(count: number, titles: string[]): Episode[] {
