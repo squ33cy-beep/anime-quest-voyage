@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
 
@@ -36,6 +37,11 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScheduleRoute = ScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
 }
@@ -69,22 +77,36 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/favorites' | '/login' | '/register' | '/search' | '/anime/$animeId'
+    | '/'
+    | '/favorites'
+    | '/login'
+    | '/register'
+    | '/schedule'
+    | '/search'
+    | '/anime/$animeId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/favorites' | '/login' | '/register' | '/search' | '/anime/$animeId'
+    | '/'
+    | '/favorites'
+    | '/login'
+    | '/register'
+    | '/schedule'
+    | '/search'
+    | '/anime/$animeId'
   id:
     | '__root__'
     | '/'
     | '/favorites'
     | '/login'
     | '/register'
+    | '/schedule'
     | '/search'
     | '/anime/$animeId'
   fileRoutesById: FileRoutesById
@@ -94,6 +116,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  ScheduleRoute: typeof ScheduleRoute
   SearchRoute: typeof SearchRoute
   AnimeAnimeIdRoute: typeof AnimeAnimeIdRoute
 }
@@ -128,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/schedule': {
+      id: '/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof ScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -150,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  ScheduleRoute: ScheduleRoute,
   SearchRoute: SearchRoute,
   AnimeAnimeIdRoute: AnimeAnimeIdRoute,
 }
