@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { FavoritesProvider } from "../lib/favorites";
+import { TrackingProvider } from "../lib/tracking";
 import { LanguageProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
@@ -123,8 +124,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <FavoritesProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
+          <TrackingProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </TrackingProvider>
         </FavoritesProvider>
       </LanguageProvider>
     </QueryClientProvider>
