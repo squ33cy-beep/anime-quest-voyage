@@ -1,5 +1,6 @@
-import { Minus, Plus, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import type { Anime } from "@/data/anime";
+import { EpisodeProgress } from "@/components/EpisodeProgress";
 import {
   useTracking,
   watchStatusLabels,
@@ -8,9 +9,8 @@ import {
 } from "@/lib/tracking";
 
 export function WatchTracker({ anime }: { anime: Anime }) {
-  const { getEntry, setRating, setStatus, setEpisodesWatched } = useTracking();
+  const { getEntry, setRating, setStatus } = useTracking();
   const entry = getEntry(anime.id);
-  const max = anime.episodeCount > 0 ? anime.episodeCount : 9999;
 
   return (
     <div className="mt-3 space-y-3 rounded-2xl border border-line/70 bg-panel/40 p-3">
