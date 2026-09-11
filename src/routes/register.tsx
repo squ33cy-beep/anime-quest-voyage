@@ -4,17 +4,17 @@ import { AuthLayout, Field } from "@/components/AuthLayout";
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Create your AniVerse account" },
+      { title: "Create your AniJikan account" },
       {
         name: "description",
         content:
-          "Sign up for AniVerse to build your anime watchlist, save favourites and follow airing series.",
+          "Sign up for AniJikan to build your anime watchlist, save favourites and follow airing series.",
       },
-      { property: "og:title", content: "Create your AniVerse account" },
+      { property: "og:title", content: "Create your AniJikan account" },
       {
         property: "og:description",
         content:
-          "Sign up for AniVerse to build your anime watchlist, save favourites and follow airing series.",
+          "Sign up for AniJikan to build your anime watchlist, save favourites and follow airing series.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

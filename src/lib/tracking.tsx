@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-const STORAGE_KEY = "aniverse:tracking";
+const STORAGE_KEY = "AniJikan:tracking";
 
 export type WatchStatus = "watching" | "completed" | "plan" | "dropped";
 

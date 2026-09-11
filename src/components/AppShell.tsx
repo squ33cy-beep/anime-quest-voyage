@@ -35,7 +35,7 @@ export function BrandMark() {
         A
       </span>
       <span className="truncate font-display text-xl font-bold tracking-tight text-foreground">
-        AniVerse
+        AniJikan
       </span>
     </Link>
   );

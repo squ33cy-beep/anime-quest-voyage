@@ -114,7 +114,7 @@ export type TKey = keyof typeof dict;
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (key: TKey) => string };
 
 const LanguageContext = createContext<Ctx | null>(null);
-const STORAGE_KEY = "aniverse:lang";
+const STORAGE_KEY = "AniJikan:lang";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");

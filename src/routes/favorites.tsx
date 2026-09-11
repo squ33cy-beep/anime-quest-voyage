@@ -11,15 +11,15 @@ import { useFavorites } from "@/lib/favorites";
 export const Route = createFileRoute("/favorites")({
   head: () => ({
     meta: [
-      { title: "My Favorite Anime — AniVerse" },
+      { title: "My Favorite Anime — AniJikan" },
       {
         name: "description",
-        content: "Every anime you have saved to your AniVerse list, in one place.",
+        content: "Every anime you have saved to your AniJikan list, in one place.",
       },
-      { property: "og:title", content: "My Favorite Anime — AniVerse" },
+      { property: "og:title", content: "My Favorite Anime — AniJikan" },
       {
         property: "og:description",
-        content: "Every anime you have saved to your AniVerse list, in one place.",
+        content: "Every anime you have saved to your AniJikan list, in one place.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

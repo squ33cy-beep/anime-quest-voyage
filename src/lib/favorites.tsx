@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-const STORAGE_KEY = "aniverse:favorites";
+const STORAGE_KEY = "AniJikan:favorites";
 
 type FavoritesContextValue = {
   favorites: string[];

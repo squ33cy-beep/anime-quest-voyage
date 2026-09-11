@@ -13,7 +13,7 @@ import { useLanguage, type TKey } from "@/lib/i18n";
 export const Route = createFileRoute("/schedule")({
   head: () => ({
     meta: [
-      { title: "My Schedule — Weekly Anime Broadcast Days | AniVerse" },
+      { title: "My Schedule — Weekly Anime Broadcast Days | AniJikan" },
       {
         name: "description",
         content:

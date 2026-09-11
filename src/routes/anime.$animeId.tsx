@@ -24,13 +24,13 @@ export const Route = createFileRoute("/anime/$animeId")({
     if (!loaderData) {
       return {
         meta: [
-          { title: "Anime not found — AniVerse" },
+          { title: "Anime not found — AniJikan" },
           { name: "robots", content: "noindex" },
         ],
       };
     }
     const { anime } = loaderData;
-    const title = `${anime.title} — Episodes, Score & Details | AniVerse`;
+    const title = `${anime.title} — Episodes, Score & Details | AniJikan`;
     const description = anime.synopsis.slice(0, 155);
     return {
       meta: [

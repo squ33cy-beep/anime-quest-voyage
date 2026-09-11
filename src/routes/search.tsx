@@ -11,13 +11,13 @@ const years = Array.from({ length: 27 }, (_, i) => String(2026 - i));
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { title: "Search Anime by Genre and Year — AniVerse" },
+      { title: "Search Anime by Genre and Year — AniJikan" },
       {
         name: "description",
         content:
           "Search real anime data and filter by genre and release year to find your next series.",
       },
-      { property: "og:title", content: "Search Anime by Genre and Year — AniVerse" },
+      { property: "og:title", content: "Search Anime by Genre and Year — AniJikan" },
       {
         property: "og:description",
         content:
