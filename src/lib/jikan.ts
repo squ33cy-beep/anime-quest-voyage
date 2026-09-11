@@ -1,34 +1,30 @@
 import type { Anime, Episode } from "@/data/anime";
 
-const BASE = "https://api.jikan.moe/v4";
+const ANILIST_URL = "https://graphql.anilist.co";
 
-type JikanAnime = {
-  mal_id: number;
-  title: string;
-  title_english: string | null;
-  title_japanese: string | null;
-  images: { jpg: { large_image_url: string | null; image_url: string | null } };
-  score: number | null;
-  year: number | null;
-  aired?: { from: string | null };
+type AniListMedia = {
+  id: number;
+  title: {
+    english: string | null;
+    romaji: string | null;
+    native: string | null;
+  };
+  coverImage: {
+    extraLarge: string | null;
+    large: string | null;
+  };
+  averageScore: number | null;
+  seasonYear: number | null;
+  startDate?: { year: number | null };
+  genres: string[];
   status: string | null;
   episodes: number | null;
-  synopsis: string | null;
-  genres: { name: string }[];
-  themes?: { name: string }[];
-  broadcast?: { day: string | null; time: string | null } | null;
-};
-
-type JikanEpisode = {
-  mal_id: number;
-  title: string | null;
-  duration?: number | null;
+  description: string | null;
 };
 
 function mapStatus(status: string | null): Anime["status"] {
-  const s = (status ?? "").toLowerCase();
-  if (s.includes("currently")) return "Airing";
-  if (s.includes("not yet")) return "Upcoming";
+  if (status === "RELEASING") return "Airing";
+  if (status === "NOT_YET_RELEASED") return "Upcoming";
   return "Finished";
 }
 
@@ -38,52 +34,59 @@ export function statusLabel(status: Anime["status"]): string {
   return "Finished Airing";
 }
 
-export function mapAnime(item: JikanAnime): Anime {
+function mapAnime(item: AniListMedia): Anime {
   return {
-    id: String(item.mal_id),
-    title: item.title_english ?? item.title,
-    titleJp: item.title_japanese ?? "",
-    poster:
-      item.images.jpg.large_image_url ?? item.images.jpg.image_url ?? "",
-    score: item.score ?? 0,
-    year:
-      item.year ??
-      (item.aired?.from ? new Date(item.aired.from).getFullYear() : 0),
-    genres: [...item.genres, ...(item.themes ?? [])].map((g) => g.name),
+    id: String(item.id),
+    title: item.title.english || item.title.romaji || "Unknown Title",
+    titleJp: item.title.native || "",
+    poster: item.coverImage.extraLarge || item.coverImage.large || "",
+    score: item.averageScore ? item.averageScore / 10 : 0,
+    year: item.seasonYear || item.startDate?.year || 0,
+    genres: item.genres || [],
     status: mapStatus(item.status),
-    episodeCount: item.episodes ?? 0,
-    synopsis: item.synopsis ?? "No synopsis available yet.",
+    episodeCount: item.episodes || 0,
+    synopsis: item.description
+      ? item.description.replace(/<[^>]*>?/gm, "")
+      : "No synopsis available yet.",
     episodes: [],
-    broadcastDay: item.broadcast?.day ?? null,
-    broadcastTime: item.broadcast?.time ?? null,
+    broadcastDay: null,
+    broadcastTime: null,
   };
 }
 
-// Jikan allows ~3 requests/second, so serialize calls with a small gap
-// and retry throttled responses instead of failing the section.
-let chain: Promise<unknown> = Promise.resolve();
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-function queue<T>(task: () => Promise<T>): Promise<T> {
-  const run = chain.then(task, task);
-  chain = run.then(() => sleep(400), () => sleep(400));
-  return run;
-}
-
-async function getJson<T>(path: string): Promise<T> {
-  return queue(async () => {
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const res = await fetch(`${BASE}${path}`);
-      if (res.ok) return (await res.json()) as T;
-      if (res.status === 429 || res.status >= 500) {
-        await sleep(1200 * (attempt + 1));
-        continue;
-      }
-      throw new Error(`Jikan request failed (${res.status})`);
-    }
-    throw new Error("Jikan request failed after retries");
+async function fetchAniList<T>(
+  query: string,
+  variables: Record<string, unknown> = {}
+): Promise<T> {
+  const response = await fetch(ANILIST_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ query, variables }),
   });
+
+  if (!response.ok) {
+    throw new Error(`AniList request failed: ${response.status}`);
+  }
+
+  const json = await response.json();
+  return json.data;
 }
+
+const MEDIA_QUERY = `
+  id
+  title { english romaji native }
+  coverImage { extraLarge large }
+  averageScore
+  seasonYear
+  startDate { year }
+  genres
+  status
+  episodes
+  description
+`;
 
 function dedupe(list: Anime[]): Anime[] {
   const seen = new Set<string>();
@@ -91,30 +94,77 @@ function dedupe(list: Anime[]): Anime[] {
 }
 
 export async function fetchPopularAnime(limit = 8): Promise<Anime[]> {
-  const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime?filter=bypopularity`,
-  );
-  return dedupe(json.data.map(mapAnime)).slice(0, limit);
+  try {
+    const query = `
+      query ($perPage: Int) {
+        Page(page: 1, perPage: $perPage) {
+          media(type: ANIME, sort: POPULARITY_DESC) {
+            ${MEDIA_QUERY}
+          }
+        }
+      }
+    `;
+    const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(query, {
+      perPage: limit,
+    });
+    return dedupe(data.Page.media.map(mapAnime));
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchAiringAnime(limit = 10): Promise<Anime[]> {
-  const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime?filter=airing`,
-  );
-  return dedupe(json.data.map(mapAnime)).slice(0, limit);
+  try {
+    const query = `
+      query ($perPage: Int) {
+        Page(page: 1, perPage: $perPage) {
+          media(type: ANIME, status: RELEASING, sort: POPULARITY_DESC) {
+            ${MEDIA_QUERY}
+          }
+        }
+      }
+    `;
+    const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(query, {
+      perPage: limit,
+    });
+    return dedupe(data.Page.media.map(mapAnime));
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchTopRatedAnime(limit = 8): Promise<Anime[]> {
-  const json = await getJson<{ data: JikanAnime[] }>(
-    `/top/anime`,
-  );
-  return dedupe(json.data.map(mapAnime)).slice(0, limit);
+  try {
+    const query = `
+      query ($perPage: Int) {
+        Page(page: 1, perPage: $perPage) {
+          media(type: ANIME, sort: SCORE_DESC) {
+            ${MEDIA_QUERY}
+          }
+        }
+      }
+    `;
+    const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(query, {
+      perPage: limit,
+    });
+    return dedupe(data.Page.media.map(mapAnime));
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchAnimeById(id: string): Promise<Anime | null> {
   try {
-    const json = await getJson<{ data: JikanAnime }>(`/anime/${id}/full`);
-    return mapAnime(json.data);
+    const query = `
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {${MEDIA_QUERY}
+        }
+      }
+    `;
+    const data = await fetchAniList<{ Media: AniListMedia }>(query, {
+      id: parseInt(id, 10),
+    });
+    return data.Media ? mapAnime(data.Media) : null;
   } catch {
     return null;
   }
@@ -122,30 +172,57 @@ export async function fetchAnimeById(id: string): Promise<Anime | null> {
 
 export async function fetchEpisodes(id: string): Promise<Episode[]> {
   try {
-    const json = await getJson<{ data: JikanEpisode[] }>(
-      `/anime/${id}/episodes`,
-    );
-    return json.data.slice(0, 30).map((ep, i) => ({
-      number: ep.mal_id ?? i + 1,
-      title: ep.title ?? `Episode ${i + 1}`,
-      duration: ep.duration ? `${Math.round(ep.duration / 60)} min` : "24 min",
-    }));
+    const anime = await fetchAnimeById(id);
+    if (!anime) return [];
+    const count = anime.episodeCount || 12;
+    const episodes: Episode[] = [];
+    for (let i = 1; i <= Math.min(count, 30); i++) {
+      episodes.push({
+        number: i,
+        title: `Episode ${i}`,
+        duration: "24 min",
+      });
+    }
+    return episodes;
   } catch {
     return [];
   }
 }
 
-export async function fetchRecommendations(id: string, limit = 4): Promise<Anime[]> {
+export async function fetchRecommendations(
+  id: string,
+  limit = 4
+): Promise<Anime[]> {
   try {
-    const json = await getJson<{
-      data: { entry: { mal_id: number; title: string; images: JikanAnime["images"] } }[];
-    }>(`/anime/${id}/recommendations`);
-    const entries = json.data.slice(0, limit).map((r) => r.entry);
-    return dedupe(
-      await Promise.all(entries.map((e) => fetchAnimeById(String(e.mal_id)))).then(
-        (list) => list.filter((a): a is Anime => a !== null),
-      ),
-    );
+    const query = `
+      query ($id: Int,$perPage: Int) {
+        Media(id: $id, type: ANIME) {
+          recommendations(perPage: $perPage, sort: RATING_DESC) {
+            nodes {
+              mediaRecommendation {
+                ${MEDIA_QUERY}
+              }
+            }
+          }
+        }
+      }
+    `;
+    type RecData = {
+      Media: {
+        recommendations: {
+          nodes: { mediaRecommendation: AniListMedia | null }[];
+        };
+      };
+    };
+    const data = await fetchAniList<RecData>(query, {
+      id: parseInt(id, 10),
+      perPage: limit,
+    });
+    const list = data.Media.recommendations.nodes
+      .map((n) => n.mediaRecommendation)
+      .filter((m): m is AniListMedia => m !== null)
+      .map(mapAnime);
+    return dedupe(list);
   } catch {
     return [];
   }
@@ -170,13 +247,29 @@ export async function searchAnime(opts: {
   query: string;
   year: string;
 }): Promise<Anime[]> {
-  const params = new URLSearchParams({ sfw: "true" });
-  if (opts.query.trim()) params.set("q", opts.query.trim());
-  else params.set("order_by", "popularity");
-  if (opts.year !== "all") {
-    params.set("start_date", `${opts.year}-01-01`);
-    params.set("end_date", `${opts.year}-12-31`);
+  try {
+    const query = `
+      query ($search: String,$seasonYear: Int) {
+        Page(page: 1, perPage: 20) {
+          media(type: ANIME, search: $search, seasonYear: $seasonYear, sort: POPULARITY_DESC) {${MEDIA_QUERY}
+          }
+        }
+      }
+    `;
+    const variables: Record<string, unknown> = {};
+    if (opts.query.trim()) {
+      variables.search = opts.query.trim();
+    }
+    if (opts.year !== "all") {
+      variables.seasonYear = parseInt(opts.year, 10);
+    }
+
+    const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(
+      query,
+      variables
+    );
+    return dedupe(data.Page.media.map(mapAnime));
+  } catch {
+    return [];
   }
-  const json = await getJson<{ data: JikanAnime[] }>(`/anime?${params}`);
-  return dedupe(json.data.map(mapAnime));
 }
