@@ -94,6 +94,12 @@ const dict = {
     th: "บันทึกอนิเมะที่กำลังออนแอร์ แล้วจะปรากฏในวันที่ออกอากาศ",
   },
   "schedule.unknownDay": { en: "Day not announced", th: "ยังไม่ระบุวัน" },
+  "schedule.episodes": { en: "Episodes watched", th: "ตอนที่ดูแล้ว" },
+  "schedule.catchingUp": { en: "Catching Up", th: "ตามเก็บย้อนหลัง" },
+  "schedule.catchingUpBody": {
+    en: "Titles you are watching that have finished airing, so they have no weekly day.",
+    th: "เรื่องที่คุณกำลังดูและออกอากาศจบแล้ว จึงไม่มีวันออกอากาศประจำสัปดาห์",
+  },
   "day.monday": { en: "Monday", th: "จันทร์" },
   "day.tuesday": { en: "Tuesday", th: "อังคาร" },
   "day.wednesday": { en: "Wednesday", th: "พุธ" },

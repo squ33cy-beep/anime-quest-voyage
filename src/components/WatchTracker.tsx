@@ -1,5 +1,6 @@
-import { Minus, Plus, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import type { Anime } from "@/data/anime";
+import { EpisodeProgress } from "@/components/EpisodeProgress";
 import {
   useTracking,
   watchStatusLabels,
@@ -8,9 +9,8 @@ import {
 } from "@/lib/tracking";
 
 export function WatchTracker({ anime }: { anime: Anime }) {
-  const { getEntry, setRating, setStatus, setEpisodesWatched } = useTracking();
+  const { getEntry, setRating, setStatus } = useTracking();
   const entry = getEntry(anime.id);
-  const max = anime.episodeCount > 0 ? anime.episodeCount : 9999;
 
   return (
     <div className="mt-3 space-y-3 rounded-2xl border border-line/70 bg-panel/40 p-3">
@@ -69,41 +69,7 @@ export function WatchTracker({ anime }: { anime: Anime }) {
       </div>
 
       {/* Episode progress */}
-      <div>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Episodes watched
-        </span>
-        <div className="mt-1.5 flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={`Decrease episodes watched for ${anime.title}`}
-            onClick={() =>
-              setEpisodesWatched(anime.id, Math.max(0, entry.episodesWatched - 1))
-            }
-            disabled={entry.episodesWatched <= 0}
-            className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-ink/70 text-foreground transition hover:border-brand/60 disabled:opacity-40"
-          >
-            <Minus className="size-3.5" />
-          </button>
-          <span className="flex-1 text-center font-display text-sm font-bold text-foreground">
-            {entry.episodesWatched}
-            {anime.episodeCount > 0 ? (
-              <span className="text-muted-foreground"> / {anime.episodeCount}</span>
-            ) : null}
-          </span>
-          <button
-            type="button"
-            aria-label={`Increase episodes watched for ${anime.title}`}
-            onClick={() =>
-              setEpisodesWatched(anime.id, Math.min(max, entry.episodesWatched + 1))
-            }
-            disabled={entry.episodesWatched >= max}
-            className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-ink/70 text-foreground transition hover:border-cyan/60 disabled:opacity-40"
-          >
-            <Plus className="size-3.5" />
-          </button>
-        </div>
-      </div>
+      <EpisodeProgress anime={anime} label="Episodes watched" />
     </div>
   );
 }

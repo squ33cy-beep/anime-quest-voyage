@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
+import { EpisodeProgress } from "@/components/EpisodeProgress";
 import type { Anime } from "@/data/anime";
 import { fetchAnimeById } from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
+import { useTracking } from "@/lib/tracking";
 import { useLanguage, type TKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/schedule")({
@@ -48,6 +50,7 @@ function dayIndex(anime: Anime): number {
 function SchedulePage() {
   const { t } = useLanguage();
   const { favorites } = useFavorites();
+  const { getEntry } = useTracking();
 
   const { data, isLoading } = useQuery({
     queryKey: ["favorites", favorites],
@@ -66,6 +69,9 @@ function SchedulePage() {
   }));
   const unknown = airing.filter((a) => dayIndex(a) === -1);
   const hasAny = airing.length > 0;
+  const catchingUp = (data ?? []).filter(
+    (a) => a.status === "Finished" && getEntry(a.id).status === "watching",
+  );
 
   return (
     <AppShell>
@@ -118,6 +124,25 @@ function SchedulePage() {
             </Link>
           </div>
         )}
+
+        {catchingUp.length > 0 && (
+          <div className="mt-14 border-t border-line/60 pt-10">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+              {t("schedule.catchingUp")}
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-slate-400">
+              {t("schedule.catchingUpBody")}
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {catchingUp.map((anime) => (
+                <div key={anime.id}>
+                  <AnimeCard anime={anime} />
+                  <EpisodeProgress anime={anime} label={t("schedule.episodes")} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </AppShell>
   );
@@ -132,6 +157,7 @@ function DayBlock({
   items: Anime[];
   muted?: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <div>
       <div className="flex items-center gap-3">
@@ -149,7 +175,10 @@ function DayBlock({
       </div>
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {items.map((anime) => (
-          <AnimeCard key={anime.id} anime={anime} />
+          <div key={anime.id}>
+            <AnimeCard anime={anime} />
+            <EpisodeProgress anime={anime} label={t("schedule.episodes")} />
+          </div>
         ))}
       </div>
     </div>
