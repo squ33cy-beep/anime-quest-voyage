@@ -157,6 +157,7 @@ function DayBlock({
   items: Anime[];
   muted?: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <div>
       <div className="flex items-center gap-3">
