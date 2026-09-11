@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
+import { WatchTracker } from "@/components/WatchTracker";
 import type { Anime } from "@/data/anime";
 import { fetchAnimeById } from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
@@ -60,7 +61,10 @@ function FavoritesPage() {
           ) : (
             <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {saved.map((anime) => (
-                <AnimeCard key={anime.id} anime={anime} />
+                <div key={anime.id}>
+                  <AnimeCard anime={anime} />
+                  <WatchTracker anime={anime} />
+                </div>
               ))}
             </div>
           )
