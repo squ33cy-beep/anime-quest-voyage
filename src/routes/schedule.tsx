@@ -68,6 +68,9 @@ function SchedulePage() {
   }));
   const unknown = airing.filter((a) => dayIndex(a) === -1);
   const hasAny = airing.length > 0;
+  const catchingUp = (data ?? []).filter(
+    (a) => a.status === "Finished" && getEntry(a.id).status === "watching",
+  );
 
   return (
     <AppShell>
