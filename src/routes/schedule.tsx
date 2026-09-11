@@ -175,7 +175,10 @@ function DayBlock({
       </div>
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {items.map((anime) => (
-          <AnimeCard key={anime.id} anime={anime} />
+          <div key={anime.id}>
+            <AnimeCard anime={anime} />
+            <EpisodeProgress anime={anime} label={t("schedule.episodes")} />
+          </div>
         ))}
       </div>
     </div>
