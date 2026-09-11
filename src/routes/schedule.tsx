@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
+import { EpisodeProgress } from "@/components/EpisodeProgress";
 import type { Anime } from "@/data/anime";
 import { fetchAnimeById } from "@/lib/jikan";
 import { useFavorites } from "@/lib/favorites";
+import { useTracking } from "@/lib/tracking";
 import { useLanguage, type TKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/schedule")({
