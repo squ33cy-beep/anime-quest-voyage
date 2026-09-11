@@ -124,6 +124,25 @@ function SchedulePage() {
             </Link>
           </div>
         )}
+
+        {catchingUp.length > 0 && (
+          <div className="mt-14 border-t border-line/60 pt-10">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+              {t("schedule.catchingUp")}
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-slate-400">
+              {t("schedule.catchingUpBody")}
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {catchingUp.map((anime) => (
+                <div key={anime.id}>
+                  <AnimeCard anime={anime} />
+                  <EpisodeProgress anime={anime} label={t("schedule.episodes")} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </AppShell>
   );
