@@ -50,6 +50,7 @@ function dayIndex(anime: Anime): number {
 function SchedulePage() {
   const { t } = useLanguage();
   const { favorites } = useFavorites();
+  const { getEntry } = useTracking();
 
   const { data, isLoading } = useQuery({
     queryKey: ["favorites", favorites],
