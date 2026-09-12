@@ -89,10 +89,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {children}
+          {children}
+        </div>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line/60 bg-panel/70 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 w-full border-t border-line/60 bg-panel/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-4 items-start gap-1 px-2 py-2 sm:px-4">
           {mobileNav.map((item) => (
             <Link
@@ -109,6 +110,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </div>
       </nav>
-    </div>
+    </>
   );
 }
