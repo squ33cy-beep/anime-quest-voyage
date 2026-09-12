@@ -45,8 +45,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-ink text-slate-200">
-      <AmbientBackdrop />
+    <>
+      <div className="relative min-h-screen overflow-x-clip bg-ink text-slate-200">
+        <AmbientBackdrop />
 
       <div className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8 lg:pb-16">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 pt-5 lg:flex lg:justify-between">
