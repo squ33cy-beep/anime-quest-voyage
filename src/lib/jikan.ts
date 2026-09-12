@@ -115,7 +115,9 @@ const MEDIA_QUERY = `
   status
   episodes
   description
+  nextAiringEpisode { airingAt episode }
 `;
+
 
 function dedupe(list: Anime[]): Anime[] {
   const seen = new Set<string>();
@@ -287,11 +289,12 @@ export async function searchAnime(opts: {
     `;
     const variables: Record<string, unknown> = {};
     if (opts.query.trim()) {
-      variables.search = opts.query.trim();
+      variables["search"] = opts.query.trim();
     }
     if (opts.year !== "all") {
-      variables.seasonYear = parseInt(opts.year, 10);
+      variables["seasonYear"] = parseInt(opts.year, 10);
     }
+
 
     const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(
       query,
