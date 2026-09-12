@@ -61,6 +61,7 @@ export function statusLabel(status: Anime["status"]): string {
 }
 
 function mapAnime(item: AniListMedia): Anime {
+  const { day, time } = airingSchedule(item.nextAiringEpisode?.airingAt);
   return {
     id: String(item.id),
     title: item.title.english || item.title.romaji || "Unknown Title",
@@ -75,10 +76,12 @@ function mapAnime(item: AniListMedia): Anime {
       ? item.description.replace(/<[^>]*>?/gm, "")
       : "No synopsis available yet.",
     episodes: [],
-    broadcastDay: null,
-    broadcastTime: null,
+    broadcastDay: day,
+    broadcastTime: time,
+    nextEpisode: item.nextAiringEpisode?.episode ?? null,
   };
 }
+
 
 async function fetchAniList<T>(
   query: string,
