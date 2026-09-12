@@ -20,7 +20,33 @@ type AniListMedia = {
   status: string | null;
   episodes: number | null;
   description: string | null;
+  nextAiringEpisode?: { airingAt: number; episode: number } | null;
 };
+
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
+/** Convert an AniList `airingAt` Unix timestamp (seconds) into a weekday + local time. */
+export function airingSchedule(airingAt: number | null | undefined): {
+  day: string | null;
+  time: string | null;
+} {
+  if (!airingAt) return { day: null, time: null };
+  const date = new Date(airingAt * 1000);
+  if (Number.isNaN(date.getTime())) return { day: null, time: null };
+  return {
+    day: WEEKDAYS[date.getDay()] ?? null,
+    time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  };
+}
+
 
 function mapStatus(status: string | null): Anime["status"] {
   if (status === "RELEASING") return "Airing";
@@ -35,6 +61,7 @@ export function statusLabel(status: Anime["status"]): string {
 }
 
 function mapAnime(item: AniListMedia): Anime {
+  const { day, time } = airingSchedule(item.nextAiringEpisode?.airingAt);
   return {
     id: String(item.id),
     title: item.title.english || item.title.romaji || "Unknown Title",
@@ -49,10 +76,12 @@ function mapAnime(item: AniListMedia): Anime {
       ? item.description.replace(/<[^>]*>?/gm, "")
       : "No synopsis available yet.",
     episodes: [],
-    broadcastDay: null,
-    broadcastTime: null,
+    broadcastDay: day,
+    broadcastTime: time,
+    nextEpisode: item.nextAiringEpisode?.episode ?? null,
   };
 }
+
 
 async function fetchAniList<T>(
   query: string,
@@ -86,7 +115,9 @@ const MEDIA_QUERY = `
   status
   episodes
   description
+  nextAiringEpisode { airingAt episode }
 `;
+
 
 function dedupe(list: Anime[]): Anime[] {
   const seen = new Set<string>();
@@ -258,11 +289,12 @@ export async function searchAnime(opts: {
     `;
     const variables: Record<string, unknown> = {};
     if (opts.query.trim()) {
-      variables.search = opts.query.trim();
+      variables["search"] = opts.query.trim();
     }
     if (opts.year !== "all") {
-      variables.seasonYear = parseInt(opts.year, 10);
+      variables["seasonYear"] = parseInt(opts.year, 10);
     }
+
 
     const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(
       query,

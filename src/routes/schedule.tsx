@@ -177,10 +177,17 @@ function DayBlock({
         {items.map((anime) => (
           <div key={anime.id}>
             <AnimeCard anime={anime} />
+            {anime.broadcastTime && (
+              <p className="mt-2 text-[11px] font-semibold text-cyan">
+                {anime.broadcastTime}
+                {anime.nextEpisode ? ` · EP ${anime.nextEpisode}` : ""}
+              </p>
+            )}
             <EpisodeProgress anime={anime} label={t("schedule.episodes")} />
           </div>
         ))}
       </div>
+
     </div>
   );
 }
