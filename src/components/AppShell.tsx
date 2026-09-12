@@ -45,8 +45,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-ink text-slate-200">
-      <AmbientBackdrop />
+    <>
+      <div className="relative min-h-screen overflow-x-clip bg-ink text-slate-200">
+        <AmbientBackdrop />
 
       <div className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8 lg:pb-16">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 pt-5 lg:flex lg:justify-between">
@@ -88,10 +89,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {children}
+          {children}
+        </div>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line/60 bg-panel/70 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 w-full border-t border-line/60 bg-panel/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-4 items-start gap-1 px-2 py-2 sm:px-4">
           {mobileNav.map((item) => (
             <Link
@@ -108,6 +110,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </div>
       </nav>
-    </div>
+    </>
   );
 }
