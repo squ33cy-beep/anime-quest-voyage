@@ -20,7 +20,33 @@ type AniListMedia = {
   status: string | null;
   episodes: number | null;
   description: string | null;
+  nextAiringEpisode?: { airingAt: number; episode: number } | null;
 };
+
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
+/** Convert an AniList `airingAt` Unix timestamp (seconds) into a weekday + local time. */
+export function airingSchedule(airingAt: number | null | undefined): {
+  day: string | null;
+  time: string | null;
+} {
+  if (!airingAt) return { day: null, time: null };
+  const date = new Date(airingAt * 1000);
+  if (Number.isNaN(date.getTime())) return { day: null, time: null };
+  return {
+    day: WEEKDAYS[date.getDay()] ?? null,
+    time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  };
+}
+
 
 function mapStatus(status: string | null): Anime["status"] {
   if (status === "RELEASING") return "Airing";
