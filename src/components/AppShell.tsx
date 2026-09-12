@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Compass, Heart, Menu, Search, type LucideIcon } from "lucide-react";
+import { CalendarDays, Compass, Heart, Search, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage, type TKey } from "@/lib/i18n";
@@ -15,7 +15,7 @@ const mobileNav: { key: TKey; to: string; icon: LucideIcon }[] = [
   { key: "nav.home", to: "/", icon: Compass },
   { key: "nav.search", to: "/search", icon: Search },
   { key: "nav.saved", to: "/favorites", icon: Heart },
-  { key: "nav.signIn", to: "/login", icon: Menu },
+  { key: "nav.schedule", to: "/schedule", icon: CalendarDays },
 ];
 
 export function AmbientBackdrop() {
@@ -92,16 +92,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line/60 bg-panel/70 backdrop-blur-xl lg:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-around px-6 py-2.5">
+        <div className="mx-auto grid max-w-md grid-cols-4 items-start gap-1 px-2 py-2 sm:px-4">
           {mobileNav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               activeProps={{ className: "text-cyan" }}
-              className="flex flex-col items-center gap-1 text-slate-500"
+              className="flex min-w-0 flex-col items-center gap-1 px-0.5 text-slate-500"
             >
-              <item.icon className="size-5" />
-              <span className="text-[10px] font-semibold">{t(item.key)}</span>
+              <item.icon className="size-5 shrink-0" />
+              <span className="w-full truncate text-center text-[10px] font-semibold leading-tight">
+                {t(item.key)}
+              </span>
             </Link>
           ))}
         </div>

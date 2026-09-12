@@ -258,10 +258,10 @@ export async function searchAnime(opts: {
     `;
     const variables: Record<string, unknown> = {};
     if (opts.query.trim()) {
-      variables.search = opts.query.trim();
+      variables["search"] = opts.query.trim();
     }
     if (opts.year !== "all") {
-      variables.seasonYear = parseInt(opts.year, 10);
+      variables["seasonYear"] = parseInt(opts.year, 10);
     }
 
     const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(
