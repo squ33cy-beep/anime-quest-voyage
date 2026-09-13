@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { FavoritesProvider } from "../lib/favorites";
 import { TrackingProvider } from "../lib/tracking";
 import { LanguageProvider } from "../lib/i18n";
+import { AuthProvider } from "../lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -122,14 +123,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <FavoritesProvider>
-          <TrackingProvider>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </TrackingProvider>
-        </FavoritesProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <FavoritesProvider>
+            <TrackingProvider>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </TrackingProvider>
+          </FavoritesProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

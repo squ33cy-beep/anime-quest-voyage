@@ -27,6 +27,8 @@ const dict = {
   "action.browseAnime": { en: "Browse anime", th: "เลือกดูอนิเมะ" },
   "action.advancedSearch": { en: "Advanced Search", th: "ค้นหาขั้นสูง" },
   "action.clear": { en: "Clear", th: "ล้างค่า" },
+  "action.signOut": { en: "Sign out", th: "ออกจากระบบ" },
+  "action.googleSignIn": { en: "Sign in with Google", th: "เข้าสู่ระบบด้วย Google" },
   "home.popular": { en: "Popular now", th: "ยอดนิยมตอนนี้" },
   "home.airing": { en: "Currently airing", th: "กำลังออนแอร์" },
   "home.topRated": { en: "Top rated", th: "คะแนนสูงสุด" },
