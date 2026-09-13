@@ -185,11 +185,13 @@ function Select({
   value,
   onChange,
   options,
+  labels,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: readonly string[];
+  labels?: Record<string, string>;
 }) {
   const id = `${label.toLowerCase()}-filter`;
   return (
