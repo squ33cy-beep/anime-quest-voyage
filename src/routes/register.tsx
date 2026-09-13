@@ -1,5 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AuthLayout, Field } from "@/components/AuthLayout";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -24,6 +28,14 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterPage() {
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) navigate({ to: "/" });
+  }, [user, navigate]);
+
   return (
     <AuthLayout
       title="Create account"
@@ -37,7 +49,15 @@ function RegisterPage() {
         </>
       }
     >
-      <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <div className="mt-6">
+        <GoogleSignInButton label={t("action.googleSignIn")} />
+      </div>
+      <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-600">
+        <span className="h-px flex-1 bg-line" />
+        or
+        <span className="h-px flex-1 bg-line" />
+      </div>
+      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <Field label="Username" type="text" placeholder="neon_fan" autoComplete="username" />
         <Field label="Email" type="email" placeholder="you@example.com" autoComplete="email" />
         <Field label="Password" type="password" placeholder="••••••••" autoComplete="new-password" />
