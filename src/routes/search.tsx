@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Search as SearchIcon } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Loader2, Search as SearchIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AnimeCard } from "@/components/AnimeCard";
-import { commonGenres, searchAnime } from "@/lib/jikan";
+import { commonGenres, searchAnime, seasons } from "@/lib/jikan";
 
 const years = Array.from({ length: 27 }, (_, i) => String(2026 - i));
 
