@@ -274,34 +274,61 @@ export const commonGenres = [
   "Supernatural",
 ];
 
+export const seasons = ["WINTER", "SPRING", "SUMMER", "FALL"] as const;
+export type Season = (typeof seasons)[number];
+
+export type SearchPage = {
+  results: Anime[];
+  currentPage: number;
+  hasNextPage: boolean;
+};
+
 export async function searchAnime(opts: {
   query: string;
   year: string;
-}): Promise<Anime[]> {
+  season: string;
+  genres?: string[];
+  page?: number;
+  perPage?: number;
+}): Promise<SearchPage> {
+  const page = opts.page ?? 1;
+  const perPage = opts.perPage ?? 20;
   try {
     const query = `
-      query ($search: String,$seasonYear: Int) {
-        Page(page: 1, perPage: 20) {
-          media(type: ANIME, search: $search, seasonYear: $seasonYear, sort: POPULARITY_DESC) {${MEDIA_QUERY}
+      query ($page: Int, $perPage: Int, $search: String, $seasonYear: Int, $season: MediaSeason, $genre_in: [String]) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo { currentPage hasNextPage }
+          media(type: ANIME, search: $search, seasonYear: $seasonYear, season: $season, genre_in: $genre_in, sort: POPULARITY_DESC) {${MEDIA_QUERY}
           }
         }
       }
     `;
-    const variables: Record<string, unknown> = {};
+    const variables: Record<string, unknown> = { page, perPage };
     if (opts.query.trim()) {
       variables["search"] = opts.query.trim();
     }
     if (opts.year !== "all") {
       variables["seasonYear"] = parseInt(opts.year, 10);
     }
+    if (opts.season !== "all") {
+      variables["season"] = opts.season;
+    }
+    if (opts.genres && opts.genres.length > 0) {
+      variables["genre_in"] = opts.genres;
+    }
 
-
-    const data = await fetchAniList<{ Page: { media: AniListMedia[] } }>(
-      query,
-      variables
-    );
-    return dedupe(data.Page.media.map(mapAnime));
+    const data = await fetchAniList<{
+      Page: {
+        pageInfo: { currentPage: number; hasNextPage: boolean };
+        media: AniListMedia[];
+      };
+    }>(query, variables);
+    return {
+      results: dedupe(data.Page.media.map(mapAnime)),
+      currentPage: data.Page.pageInfo?.currentPage ?? page,
+      hasNextPage: Boolean(data.Page.pageInfo?.hasNextPage),
+    };
   } catch {
-    return [];
+    return { results: [], currentPage: page, hasNextPage: false };
   }
 }
