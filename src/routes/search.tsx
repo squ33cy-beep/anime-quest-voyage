@@ -210,7 +210,8 @@ function Select({
       >
         {options.map((option) => (
           <option key={option} value={option} className="bg-panel">
-            {option === "all" ? `All ${label.toLowerCase()}s` : option}
+            {labels?.[option] ??
+              (option === "all" ? `All ${label.toLowerCase()}s` : option)}
           </option>
         ))}
       </select>
