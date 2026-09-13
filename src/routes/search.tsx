@@ -30,28 +30,56 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
+const seasonLabels: Record<string, string> = {
+  all: "All seasons",
+  WINTER: "Winter",
+  SPRING: "Spring",
+  SUMMER: "Summer",
+  FALL: "Fall",
+};
+
 function SearchPage() {
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [genre, setGenre] = useState("all");
   const [year, setYear] = useState("all");
+  const [season, setSeason] = useState("all");
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 450);
     return () => clearTimeout(t);
   }, [query]);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["search", debounced, year],
-    queryFn: () => searchAnime({ query: debounced, year }),
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    // Changing any filter changes the key, so pagination restarts at page 1.
+    queryKey: ["search", debounced, year, season, genre],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      searchAnime({
+        query: debounced,
+        year,
+        season,
+        genres: genre === "all" ? [] : [genre],
+        page: pageParam,
+      }),
+    getNextPageParam: (last) =>
+      last.hasNextPage ? last.currentPage + 1 : undefined,
     staleTime: 1000 * 60 * 5,
   });
 
-  const results = useMemo(
-    () =>
-      (data ?? []).filter((a) => genre === "all" || a.genres.includes(genre)),
-    [data, genre],
-  );
+  const results = useMemo(() => {
+    const seen = new Set<string>();
+    return (data?.pages ?? [])
+      .flatMap((p) => p.results)
+      .filter((a) => (seen.has(a.id) ? false : (seen.add(a.id), true)));
+  }, [data]);
 
   return (
     <AppShell>
@@ -77,7 +105,7 @@ function SearchPage() {
             />
           </label>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Select
               label="Genre"
               value={genre}
@@ -90,6 +118,13 @@ function SearchPage() {
               onChange={setYear}
               options={["all", ...years]}
             />
+            <Select
+              label="Season"
+              value={season}
+              onChange={setSeason}
+              options={["all", ...seasons]}
+              labels={seasonLabels}
+            />
           </div>
         </div>
 
@@ -100,18 +135,43 @@ function SearchPage() {
             ))}
           </div>
         ) : results.length > 0 ? (
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {results.map((anime) => (
-              <AnimeCard key={anime.id} anime={anime} />
-            ))}
-          </div>
+          <>
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {results.map((anime) => (
+                <AnimeCard key={anime.id} anime={anime} />
+              ))}
+              {isFetchingNextPage &&
+                Array.from({ length: 4 }, (_, i) => (
+                  <div
+                    key={`skeleton-${i}`}
+                    className="aspect-3/4 animate-pulse rounded-2xl glass"
+                  />
+                ))}
+            </div>
+            {hasNextPage ? (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => void fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-ink/60 px-6 py-3 text-sm font-semibold text-foreground transition hover:border-brand/60 hover:bg-brand/10 disabled:opacity-60"
+                >
+                  {isFetchingNextPage && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+                  {isFetchingNextPage ? "Loading…" : "Load more"}
+                </button>
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="mt-8 rounded-2xl glass px-6 py-16 text-center">
             <p className="font-display text-lg font-semibold text-foreground">
               {isError ? "Couldn't load results" : "No titles found"}
             </p>
             <p className="mt-2 text-sm text-slate-400">
-              Try a different keyword, or loosen the genre and year filters.
+              Try a different keyword, or loosen the genre, year and season
+              filters.
             </p>
           </div>
         )}
