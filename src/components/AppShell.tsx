@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarDays, Compass, Heart, Search, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { UserMenu } from "@/components/UserMenu";
 import { useLanguage, type TKey } from "@/lib/i18n";
 
 const desktopNav = [
@@ -73,19 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Search className="size-5" />
             </Link>
-            <Link
-              to="/login"
-              className="hidden rounded-full border border-line bg-panel/60 px-4 py-2 text-sm font-semibold text-foreground backdrop-blur-md transition hover:border-brand/50 sm:block"
-            >
-              {t("action.login")}
-            </Link>
-            <Link
-              to="/register"
-              aria-label="Create an account"
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-pink to-brand text-sm font-bold text-primary-foreground"
-            >
-              R
-            </Link>
+            <UserMenu />
           </div>
         </header>
 
