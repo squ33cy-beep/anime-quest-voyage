@@ -60,7 +60,7 @@ function SearchPage() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     // Changing any filter changes the key, so pagination restarts at page 1.
-    queryKey: ["search", debounced, year, season, genre],
+    queryKey: ["search", debounced, year, season, genre, allowAdult],
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       searchAnime({
@@ -69,6 +69,7 @@ function SearchPage() {
         season,
         genres: genre === "all" ? [] : [genre],
         page: pageParam,
+        allowAdult,
       }),
     getNextPageParam: (last) =>
       last.hasNextPage ? last.currentPage + 1 : undefined,
