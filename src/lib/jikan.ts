@@ -290,20 +290,25 @@ export async function searchAnime(opts: {
   genres?: string[];
   page?: number;
   perPage?: number;
+  allowAdult?: boolean;
 }): Promise<SearchPage> {
   const page = opts.page ?? 1;
   const perPage = opts.perPage ?? 20;
   try {
     const query = `
-      query ($page: Int, $perPage: Int, $search: String, $seasonYear: Int, $season: MediaSeason, $genre_in: [String]) {
+      query ($page: Int, $perPage: Int, $search: String, $seasonYear: Int, $season: MediaSeason, $genre_in: [String], $genre_not_in: [String], $isAdult: Boolean) {
         Page(page: $page, perPage: $perPage) {
           pageInfo { currentPage hasNextPage }
-          media(type: ANIME, search: $search, seasonYear: $seasonYear, season: $season, genre_in: $genre_in, sort: POPULARITY_DESC) {${MEDIA_QUERY}
+          media(type: ANIME, search: $search, seasonYear: $seasonYear, season: $season, genre_in: $genre_in, genre_not_in: $genre_not_in, isAdult: $isAdult, sort: POPULARITY_DESC) {${MEDIA_QUERY}
           }
         }
       }
     `;
     const variables: Record<string, unknown> = { page, perPage };
+    if (!opts.allowAdult) {
+      variables["isAdult"] = false;
+      variables["genre_not_in"] = ["Hentai"];
+    }
     if (opts.query.trim()) {
       variables["search"] = opts.query.trim();
     }
