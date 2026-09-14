@@ -96,16 +96,42 @@ function SearchPage() {
         </p>
 
         <div className="mt-6 rounded-2xl glass p-4">
-          <label className="flex items-center gap-3 rounded-xl border border-line bg-ink/60 px-4 py-3">
-            <SearchIcon className="size-4 shrink-0 text-slate-500" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title…"
-              aria-label="Search anime"
-              className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-600 focus:outline-none"
-            />
-          </label>
+          <div className="flex items-center gap-3">
+            <label className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-line bg-ink/60 px-4 py-3">
+              <SearchIcon className="size-4 shrink-0 text-slate-500" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by title…"
+                aria-label="Search anime"
+                className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-600 focus:outline-none"
+              />
+            </label>
+
+            <div className="flex shrink-0 items-center gap-2 rounded-xl border border-line bg-ink/60 px-3 py-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+                NSFW
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={allowAdult}
+                aria-label="Show adult content"
+                onClick={() => setAllowAdult((v) => !v)}
+                className={`relative h-6 w-11 shrink-0 rounded-full border transition ${
+                  allowAdult
+                    ? "border-brand/60 bg-brand/40"
+                    : "border-line bg-panel"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 size-4 rounded-full bg-foreground transition-all ${
+                    allowAdult ? "left-6" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Select
@@ -129,34 +155,6 @@ function SearchPage() {
             />
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-ink/60 px-4 py-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                Show adult content (NSFW)
-              </p>
-              <p className="mt-0.5 text-xs text-slate-400">
-                Safe search is on by default and hides adult titles.
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={allowAdult}
-              aria-label="Show adult content"
-              onClick={() => setAllowAdult((v) => !v)}
-              className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
-                allowAdult
-                  ? "border-brand/60 bg-brand/40"
-                  : "border-line bg-panel"
-              }`}
-            >
-              <span
-                className={`absolute top-1 size-5 rounded-full bg-foreground transition-all ${
-                  allowAdult ? "left-6" : "left-1"
-                }`}
-              />
-            </button>
-          </div>
         </div>
 
 
