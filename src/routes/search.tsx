@@ -44,6 +44,7 @@ function SearchPage() {
   const [genre, setGenre] = useState("all");
   const [year, setYear] = useState("all");
   const [season, setSeason] = useState("all");
+  const [allowAdult, setAllowAdult] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 450);
