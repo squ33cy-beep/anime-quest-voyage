@@ -128,7 +128,37 @@ function SearchPage() {
               labels={seasonLabels}
             />
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-ink/60 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Show adult content (NSFW)
+              </p>
+              <p className="mt-0.5 text-xs text-slate-400">
+                Safe search is on by default and hides adult titles.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={allowAdult}
+              aria-label="Show adult content"
+              onClick={() => setAllowAdult((v) => !v)}
+              className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
+                allowAdult
+                  ? "border-brand/60 bg-brand/40"
+                  : "border-line bg-panel"
+              }`}
+            >
+              <span
+                className={`absolute top-1 size-5 rounded-full bg-foreground transition-all ${
+                  allowAdult ? "left-6" : "left-1"
+                }`}
+              />
+            </button>
+          </div>
         </div>
+
 
         {isLoading ? (
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
