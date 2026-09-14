@@ -136,7 +136,7 @@ function Hero({ anime }: { anime: Anime }) {
         </div>
       </div>
       <div className="relative w-full max-w-sm lg:w-auto lg:max-w-md">
-        <div className="absolute -right-8 -top-8 size-40 animate-drift rounded-3xl border border-cyan/20 bg-cyan/10 backdrop-blur-xl" />
+        
         <div className="relative animate-floaty">
           <div className="rotate-3 rounded-3xl border border-line/70 bg-white/[0.04] p-3 shadow-2xl shadow-black/50 backdrop-blur-xl transition duration-500 hover:rotate-0">
             <img
